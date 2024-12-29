@@ -1,12 +1,12 @@
 Hello and welcome to Fruit Classifier!
 
-To install dependencies in local env:
+## To install dependencies in local env:
 
 1. python3.12 -m venv env
 2. source env/bin/activate
 3. pip install -r requirements.txt
 
-To setup Kaggle:
+## To setup Kaggle:
 
 1. Visit https://www.kaggle.com/
 2. Create an account
@@ -18,3 +18,20 @@ To setup Kaggle:
 8. Run: $kaggle datasets download -d moltean/fruits
 9. Run: $unzip fruits.zip
 10. You should now have both the resized 100x100 dataset and the original size dataset as directories in your working directory
+
+
+## Timeline
+
+Subject to changes.
+| Date | Activity |
+|-----------|------------------------------|
+| Jan 26 | Introduction + Setup |
+| Feb 2 | |
+| Feb 9 |  |
+| Feb 16 | |
+| Feb 23 |  |
+| March 2 | |
+| March 9 | |
+| March 16 | |
+| March 23 | |
+| March 30 |  |
