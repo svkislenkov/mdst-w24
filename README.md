@@ -12,9 +12,9 @@ Subject to changes.
 | 2 | Work on Classifier 🔍|
 | 3 | Finish up Classifier 🔍 |
 | 4 | API + Map Fruit 360 classes ⚙️|
-| 5 | Work on API ⚙️|
-| 6 | Finish API ⚙️ |
-| 7 | Front-End + Back-End 📄|
+| 5 | Finish API ⚙️ |
+| 6 | Introdcuce Front-End Framework |
+| 7 | Integrate Back-End |
 | 8 | File Import / Camera Functionality 📸 |
 | 9 | Finish demo App 📱 |
 | 10 | Final Wrap Up 🎊 |
