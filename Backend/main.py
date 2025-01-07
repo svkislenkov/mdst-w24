@@ -3,7 +3,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 import uvicorn
-from Backend.models import SimpleCNN, FruitsDataset  # Import the classes
+from models import SimpleCNN, FruitsDataset  # Import the classes
 
 # Load the dataset to get class labels
 dataset = FruitsDataset(root_dir='/Users/maryjojohnson/Documents/mdst-w24/Model_training/fruits-360_dataset_100x100/fruits-360/Training', transform=None)  # Update the path
