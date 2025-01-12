@@ -1,5 +1,5 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ImageViewer from "../../components/ImageViewer";
 
@@ -10,6 +10,7 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const [photo, setPhoto] = useState<{ uri: string } | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const cameraRef = useRef<CameraView | null>(null);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -28,6 +29,18 @@ export default function App() {
     );
   }
 
+  async function takePhoto() {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+      if (photo) {
+        setPhoto(photo);
+        setShowCamera(false);
+      } else {
+        console.error("Failed to capture photo");
+      }
+    }
+  }
+
   function toggleCameraFacing() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
@@ -36,8 +49,14 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         {showCamera ? (
-          <CameraView style={styles.camera} facing={facing}>
+          <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
             <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={takePhoto}
+              >
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
             </View>
           </CameraView>
         ) : (
@@ -70,14 +89,13 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e'
-
+    backgroundColor: "#25292e",
   },
   imageContainer: {
     flex: 2,
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden'
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
   },
   camera: {
     flex: 1,
@@ -90,9 +108,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    flexDirection: "row",
     backgroundColor: "transparent",
-    margin: 64,
+    flexDirection: "row",
+    justifyContent: "center",
+    margin: 20,
   },
   button: {
     flex: 1,
@@ -121,5 +140,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#333", // Dark gray text
+  },
+  captureButton: {
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    width: 70,
+    height: 70,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    borderRadius: 35,
+    padding: 5,
+  },
+  captureButtonInner: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 30,
+    backgroundColor: "white",
   },
 });
