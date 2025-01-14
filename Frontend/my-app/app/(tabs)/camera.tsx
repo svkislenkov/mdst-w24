@@ -20,6 +20,8 @@ export default function App() {
   const cameraRef = useRef<CameraView | null>(null);
   const [nutritionData, setNutritionData] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [predictedFruit, setPredictedFruit] = useState<string>("");
+  const [showPrediction, setShowPrediction] = useState(false);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -54,20 +56,67 @@ export default function App() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
+  async function getPredictedFruit() {
+    if (!photo) {
+      console.error("No photo taken yet");
+      return;
+    }
+
+    try {
+      console.log("Photo object:", photo);
+
+      const formData = new FormData();
+      const imageData = {
+        uri: photo.uri,
+        type: "image/jpeg",
+        name: "photo.jpg",
+      };
+      console.log("Image data being sent:", imageData);
+
+      formData.append("image", imageData as any);
+
+      console.log("Sending POST request to server...");
+      const response = await fetch("http://192.168.1.135:5003/predict", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Response status:", response.status);
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+
+      const data = JSON.parse(responseText);
+      if (!data.fruit) {
+        console.error("No fruit data in response:", data);
+        return null;
+      }
+
+      setPredictedFruit(data.fruit);
+      return data.fruit;
+    } catch (error) {
+      console.error("Error in getPredictedFruit:", error);
+      return null;
+    }
+  }
+
   async function getNutritionInfo() {
     try {
-
+      const fruit = await getPredictedFruit();
+      if (!fruit) {
+        console.error("No fruit prediction available");
+        return;
+      }
 
       const APP_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
       const APP_KEY = process.env.EXPO_PUBLIC_EDAMAM_APP_KEY;
 
-      console.log(APP_ID);
-  
-      // Update the API endpoint with credentials and query parameters
       const response = await fetch(
-        `https://api.edamam.com/api/nutrition-data?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=Apple%201`,
+        `https://api.edamam.com/api/nutrition-data?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${fruit}%201`,
         {
-          method: "GET", // Changed to GET request
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
@@ -75,12 +124,27 @@ export default function App() {
       );
 
       const data = await response.json();
-      setNutritionData(data.totalNutrients); // Store totalNutrients object
+      setNutritionData(data.totalNutrients);
       setModalVisible(true);
     } catch (error) {
       console.error("Error fetching nutrition info:", error);
     }
   }
+
+  const handlePrediction = async () => {
+    if (photo) {
+      const fruit = await getPredictedFruit();
+      if (fruit) {
+        setPredictedFruit(fruit);
+        setShowPrediction(true);
+      }
+    }
+  };
+
+  const handleShowCamera = () => {
+    setShowCamera(!showCamera);
+    setShowPrediction(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -97,7 +161,14 @@ export default function App() {
             </View>
           </CameraView>
         ) : (
-          <ImageViewer imgSource={photo || PlaceholderImage} />
+          <>
+            <ImageViewer imgSource={photo || PlaceholderImage} />
+            {showPrediction && predictedFruit && (
+              <Text style={styles.predictionText}>
+                Predicted Fruit: {predictedFruit}
+              </Text>
+            )}
+          </>
         )}
       </View>
       <Modal
@@ -145,13 +216,13 @@ export default function App() {
         </View>
       </Modal>
       <View style={styles.footerContainer}>
-        <TouchableOpacity
-          style={styles.mainButton}
-          onPress={() => setShowCamera(!showCamera)}
-        >
+        <TouchableOpacity style={styles.mainButton} onPress={handleShowCamera}>
           <Text style={styles.mainButtonText}>
             {showCamera ? "Cancel" : "Take a photo"}
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mainButton} onPress={handlePrediction}>
+          <Text style={styles.mainButtonText}>Predict Fruit</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.mainButton} onPress={getNutritionInfo}>
           <Text style={styles.mainButtonText}>Get Nutrition Info</Text>
@@ -253,5 +324,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 15,
+  },
+  predictionText: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    color: "white",
+    padding: 10,
+    borderRadius: 5,
+    fontSize: 16,
   },
 });
